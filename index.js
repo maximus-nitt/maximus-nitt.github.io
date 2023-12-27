@@ -1,5 +1,3 @@
-// To retrieve files from DB
-
 function decrChar(ch) {
     switch(ch) { 
     case 'A':
@@ -129,28 +127,47 @@ function eventItem(data, eventID) {
 
 const membersGallary = id('members-gallary');
 
-function memberItem(memberid, data) {
-    const item = node('span');
-    const title = node('h4');
-    title.innerHTML = data['fname'];
-    const image = node('img');
-    image.setAttribute('src', data['image'] != null ?
-        data['image'] :
-        'avatar.png'
-    );
-    image.setAttribute('alt', 'failed to load image');
-    item.appendChild(image);
+let memberId = 'AAG';
+while (memberId != '999') {
+    let temp =memberId
+    fetch('members/' + memberId + "h.json")
+        .then(response => response.json())
+        .then(data =>{ 
+            const title = node('h4');
+            title.innerHTML = data['fname'];
+            const image = node('img');
+            image.setAttribute('src', data['image'] != null ?
+                data['image'] :
+                'avatar.png'
+            );
+            image.setAttribute('alt', 'failed to load image');
+            
+            const item = node('span');
+            item.appendChild(image);
     item.appendChild(title);
     item.setAttribute('member-id', memberId);
     item.setAttribute('class', 'members-item');
     membersGallary.appendChild(item);
+    const button=document.createElement('button');
+    button.textContent="click";
+    button.style.marginTop = "150px";
+    
+    item.appendChild(button);
+    button.addEventListener("click",function(){const additionalContentDiv = node('div');
+    console.log(button.textContent)
+    item.appendChild(additionalContentDiv)
+    if(button.textContent==="click"){
+
+
+additionalContentDiv.textContent=temp;
+button.textContent="member-id details";
+
+return ;
 }
 
-let memberId = 'AAG';
-while (memberId != '999') {
-    fetch('members/' + memberId + "h.json")
-        .then(response => response.json())
-        .then(data => memberItem(memberId, data))
+})
+            
+})
         .catch(error => console.log(error));
     memberId = predecessor(memberId);
 }
