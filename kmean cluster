@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>K-Means Clustering</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 20px;
+      }
+
+      /* Style for data points */
+      #visualization-container {
+        position: relative;
+        width: 500px;
+        height: 500px;
+        border: 2px solid #333;
+        margin-bottom: 20px;
+      }
+
+      circle {
+        transition: transform 0.5s ease-in-out;
+      }
+
+      /* Styling for buttons and input */
+      label {
+        font-size: 16px;
+        margin-right: 5px;
+      }
+
+      input {
+        padding: 8px;
+        font-size: 14px;
+        margin-right: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      button {
+        padding: 10px;
+        font-size: 16px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+  <body>
+    <svg id="visualization-container"></svg>
+
+    <label for="numPoints">Number of Points:</label>
+    <input type="number" id="numPoints" value="30" />
+
+    <button onclick="createGraph()">Create Graph</button>
+
+    <button onclick="traversePoints()">Traverse Points</button>
+
+    <script>
+      const initialCentroids = [
+        { x: 100, y: 100, color: "red" },
+        { x: 300, y: 150, color: "blue" },
+        { x: 200, y: 300, color: "green" },
+      ];
+
+      let dataPoints = [];
+      let centroids = [...initialCentroids];
+
+      function updateVisualization() {
+        const svg = document.getElementById("visualization-container");
+
+        svg.innerHTML = "";
+
+        dataPoints.forEach((point) => {
+          const circle = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "circle"
+          );
+          circle.setAttribute("cx", point.x);
+          circle.setAttribute("cy", point.y);
+          circle.setAttribute("r", 5);
+          circle.setAttribute("fill", point.color);
+          svg.appendChild(circle);
+        });
+
+        centroids.forEach((centroid) => {
+          const circle = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "circle"
+          );
+          circle.setAttribute("cx", centroid.x);
+          circle.setAttribute("cy", centroid.y);
+          circle.setAttribute("r", 10);
+          circle.setAttribute("fill", centroid.color);
+          svg.appendChild(circle);
+        });
+      }
+
+      function createGraph() {
+        const numPoints = parseInt(
+          document.getElementById("numPoints").value,
+          10
+        );
+
+        dataPoints = generateRandomPoints(numPoints);
+
+        centroids = [...initialCentroids];
+
+        updateVisualization();
+      }
+      function generateRandomPoints(numPoints) {
+        return Array.from({ length: numPoints }, () => ({
+          x: Math.random() * 500,
+          y: Math.random() * 500,
+          color: "gray",
+        }));
+      }
+
+      function traversePoints() {
+        console.log("Traversing points and updating colors:");
+
+        dataPoints.forEach((point) => {
+          const closestCentroidIndex = calculateDistances(point);
+          point.color = centroids[closestCentroidIndex].color;
+        });
+
+        updateCentroids();
+
+        updateVisualization();
+
+        console.log("Updated Centroids:");
+        centroids.forEach((centroid) => {
+          console.log(`(${centroid.x}, ${centroid.y})`);
+        });
+      }
+
+      function calculateDistances(point) {
+        let minDistance = Infinity;
+        let closestCentroidIndex = -1;
+
+        centroids.forEach((centroid, index) => {
+          const distance = calculateDistance(point, centroid);
+
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestCentroidIndex = index;
+          }
+        });
+
+        return closestCentroidIndex;
+      }
+
+      function calculateDistance(point, centroid) {
+        return Math.hypot(point.x - centroid.x, point.y - centroid.y);
+      }
+
+      function updateCentroids() {
+        const colorGroups = {};
+
+        dataPoints.forEach((point) => {
+          if (!colorGroups[point.color]) {
+            colorGroups[point.color] = [];
+          }
+          colorGroups[point.color].push(point);
+        });
+
+        Object.keys(colorGroups).forEach((color) => {
+          const group = colorGroups[color];
+          const averageX =
+            group.reduce((sum, point) => sum + point.x, 0) / group.length;
+          const averageY =
+            group.reduce((sum, point) => sum + point.y, 0) / group.length;
+
+          const centroid = centroids.find((c) => c.color === color);
+          centroid.x = averageX;
+          centroid.y = averageY;
+        });
+      }
+    </script>
+  </body>
+</html>
